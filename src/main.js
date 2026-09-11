@@ -1,0 +1,40 @@
+import {createClient} from "@supabase/supabase-js";
+import "./style.css";
+const U=import.meta.env.VITE_SUPABASE_URL,K=import.meta.env.VITE_SUPABASE_ANON_KEY;
+const db=U&&K?createClient(U,K):null;
+const IG=import.meta.env.VITE_INSTAGRAM_URL||"#", WA=import.meta.env.VITE_WHATSAPP_URL||"#";
+let works=[
+{id:"1",title:"BGMI Rank Push",folder:"Gaming Thumbnails",image:"https://placehold.co/1200x675/111318/ffffff?text=YOUR+GFX"},
+{id:"2",title:"Esports Graphic",folder:"Esports",image:"https://placehold.co/1200x675/17181d/ffffff?text=YOUR+GFX"},
+{id:"3",title:"Stream Overlay",folder:"Overlays",image:"https://placehold.co/1200x675/0c1017/ffffff?text=YOUR+GFX"},
+{id:"4",title:"Gaming Poster",folder:"Posters",image:"https://placehold.co/1200x675/141414/ffffff?text=YOUR+GFX"}];
+let folders=["Gaming Thumbnails","Esports","Posters","Logos","Overlays"],filter="All",admin=false;
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+async function load(){if(db){const a=await db.from("folders").select("*").order("created_at");const b=await db.from("works").select("*").order("created_at",{ascending:false});if(!a.error)folders=(a.data||[]).map(x=>x.name);if(!b.error&&b.data?.length)works=b.data}render()}
+function card(w){return `<article class="work"><img src="${esc(w.image)}" alt="${esc(w.title)}" loading="lazy"><div class="workmeta"><span>${esc(w.folder)}</span><b>${esc(w.title)}</b>${admin?`<button class="tiny del" data-id="${w.id}">Delete</button>`:""}</div></article>`}
+function render(){
+document.querySelector("#app").innerHTML=`<header><a class="logo" href="#home">RAJ<span>GFX</span></a><nav><a href="#home">Home</a><a href="#work">Work</a><a href="#services">Services</a><a href="#about">About</a><a href="#contact">Contact</a></nav><button class="hamb" id="menu">☰</button></header>
+<aside id="drawer"><button id="close">×</button><a href="#home">Home</a><a href="#work">My Work</a><a href="#services">Services</a><a href="#about">About Me</a><a href="#contact">Contact</a><hr><a href="${IG}" target="_blank">Instagram ↗</a><a href="${WA}" target="_blank">WhatsApp ↗</a></aside>
+<main id="home"><section class="hero"><div><div class="tag">GRAPHIC DESIGNER • GAMING GFX</div><h1>YOUR VISION.<br><i>MY DESIGN.</i></h1><p>High-impact thumbnails, esports graphics and visual designs made to get attention.</p><div><a class="btn" href="#work">Explore my work</a><a class="ghost" href="#contact">Let's work together ↗</a></div></div><div class="heroart"><div class="line l1"></div><div class="heroword">GFX</div><div class="hero-sub">CREATIVE VISUALS / 2026</div></div></section>
+<section id="work" class="section"><div class="head"><div><div class="tag">SELECTED WORK</div><h2>Portfolio</h2></div><span>${works.length} PROJECTS</span></div><div class="filters"><button data-f="All" class="${filter==="All"?"on":""}">All</button>${folders.map(x=>`<button data-f="${esc(x)}" class="${filter===x?"on":""}">${esc(x)}</button>`).join("")}</div><div class="grid">${works.filter(w=>filter==="All"||w.folder===filter).map(card).join("")}</div></section>
+<section id="services" class="section services"><div class="tag">WHAT I DO</div><h2>Design built for<br><i>impact.</i></h2><div class="servicegrid">${["Gaming Thumbnails","Esports Graphics","Posters & Socials","Logos & Branding","Stream Overlays","Custom GFX"].map((x,i)=>`<div><small>0${i+1}</small><h3>${x}</h3><p>Clean composition, strong visuals and a style made for your audience.</p></div>`).join("")}</div></section>
+<section id="about" class="section about"><div class="tag">ABOUT ME</div><h2>I'm RAJ —<br>a gaming-focused designer.</h2><p>I create bold, clean and attention-grabbing graphics for creators, players and brands. Every project is designed to look sharp on screen and stand out in a feed.</p></section>
+<section id="contact" class="contact"><div class="tag">HAVE A PROJECT?</div><h2>Let's create<br><i>something sick.</i></h2><p>Need a custom thumbnail, poster, logo or gaming graphic?</p><a class="btn" href="${IG}" target="_blank">DM me on Instagram ↗</a></section></main>
+<footer><b>RAJ GFX</b><span>Gaming Graphic Designer</span><span>© 2026</span><button id="admin">Admin</button></footer>
+<dialog id="dlg">${admin?dashboard():login()}</dialog>`;
+wire()}
+function login(){return `<div class="panel"><button class="x" id="closeDlg">×</button><div class="tag">PRIVATE ACCESS</div><h2>Admin login</h2><input id="email" placeholder="Email" type="email"><input id="pass" placeholder="Password" type="password"><button class="btn wide" id="login">Log in</button></div>`}
+function dashboard(){return `<div class="panel"><button class="x" id="closeDlg">×</button><div class="tag">PRIVATE DASHBOARD</div><h2>Manage portfolio</h2><label>Project name<input id="title" placeholder="BGMI Thumbnail"></label><label>Folder<select id="folder">${folders.map(x=>`<option>${esc(x)}</option>`).join("")}</select></label><label>New folder (optional)<input id="newfolder" placeholder="e.g. YouTube Thumbnails"></label><input id="file" type="file" accept="image/*"><button class="btn wide" id="upload">Upload work</button><h3>Folders</h3>${folders.map(x=>`<div class="frow"><span>${esc(x)}</span><button class="tiny ren" data-name="${esc(x)}">Rename</button></div>`).join("")}</div>`}
+function wire(){
+document.querySelector("#menu").onclick=()=>document.querySelector("#drawer").classList.add("show");document.querySelector("#close").onclick=()=>document.querySelector("#drawer").classList.remove("show");
+document.querySelectorAll("#drawer a").forEach(a=>a.onclick=()=>document.querySelector("#drawer").classList.remove("show"));
+document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{filter=b.dataset.f;render()});
+document.querySelector("#admin").onclick=()=>document.querySelector("#dlg").showModal();document.querySelector("#closeDlg").onclick=()=>document.querySelector("#dlg").close();
+if(!admin)document.querySelector("#login").onclick=loginNow;else{document.querySelector("#upload").onclick=upload;document.querySelectorAll(".ren").forEach(b=>b.onclick=()=>rename(b.dataset.name));document.querySelectorAll(".del").forEach(b=>b.onclick=()=>del(b.dataset.id))}
+}
+async function loginNow(){if(!db)return alert("Connect Supabase first.");const {error}=await db.auth.signInWithPassword({email:email.value,password:pass.value});if(error)return alert(error.message);admin=true;render();document.querySelector("#dlg").showModal()}
+async function upload(){const file=document.querySelector("#file").files[0],title=document.querySelector("#title").value.trim();let folder=document.querySelector("#newfolder").value.trim()||document.querySelector("#folder").value;if(!file||!title)return alert("Add a project name and image.");const path=crypto.randomUUID()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");let r=await db.storage.from("portfolio").upload(path,file);if(r.error)return alert(r.error.message);let url=db.storage.from("portfolio").getPublicUrl(path).data.publicUrl;r=await db.from("works").insert({title,folder,image:url,storage_path:path});if(r.error)return alert(r.error.message);await db.from("folders").upsert({name:folder});await load();document.querySelector("#dlg").close()}
+async function rename(old){const n=prompt("New folder name:",old);if(!n||n===old)return;let r=await db.from("folders").update({name:n}).eq("name",old);if(r.error)return alert(r.error.message);await db.from("works").update({folder:n}).eq("folder",old);await load()}
+async function del(id){if(!confirm("Delete this work?"))return;const w=works.find(x=>x.id==id);await db.storage.from("portfolio").remove([w.storage_path]);await db.from("works").delete().eq("id",id);await load()}
+load();
