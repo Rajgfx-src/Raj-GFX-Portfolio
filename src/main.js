@@ -12,7 +12,7 @@ let folders=["Gaming Thumbnails","Esports","Posters","Logos","Overlays"],filter=
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 async function load(){if(db){const a=await db.from("folders").select("*").order("created_at");const b=await db.from("works").select("*").order("created_at",{ascending:false});if(!a.error)folders=(a.data||[]).map(x=>x.name);if(!b.error&&b.data?.length)works=b.data}render()}
-function card(w){return `<article class="work"><img src="${esc(w.image)}" alt="${esc(w.title)}" loading="lazy"><div class="workmeta"><span>${esc(w.folder)}</span><b>${esc(w.title)}</b>${admin?`<button class="tiny del" data-id="${w.id}">Delete</button>`:""}</div></article>`}
+function card(w){return `<article class="work"><img class="ratio-img" src="${esc(w.image)}" alt="${esc(w.title)}" loading="lazy"><div class="workmeta"><span>${esc(w.folder)}</span><b>${esc(w.title)}</b>${admin?`<button class="tiny del" data-id="${w.id}">Delete</button>`:""}</div></article>`}
 function render(){
 document.querySelector("#app").innerHTML=`<header><a class="logo" href="#home">RAJ<span>GFX</span></a><nav><a href="#home">Home</a><a href="#work" data-show-all="1">Work</a><a href="#services">Services</a><a href="#about">About</a><a href="#contact">Contact</a></nav><button class="hamb" id="menu">☰</button></header>
 <aside id="drawer"><button id="close">×</button><a href="#home">Home</a><a href="#work" data-show-all="1">My Work</a><a href="#services">Services</a><a href="#about">About Me</a><a href="#contact">Contact</a><hr><a href="${IG}" target="_blank">Instagram ↗</a><a href="${WA}" target="_blank">WhatsApp ↗</a></aside>
@@ -23,7 +23,7 @@ document.querySelector("#app").innerHTML=`<header><a class="logo" href="#home">R
 <section id="contact" class="contact"><div class="tag">HAVE A PROJECT?</div><h2>Let's create<br><i>something sick.</i></h2><p>Need a custom thumbnail, poster, logo or gaming graphic?</p><a class="btn" href="${IG}" target="_blank">DM me on Instagram ↗</a></section></main>
 <footer><b>RAJ GFX</b><span>Gaming Graphic Designer</span><span>© 2026</span><button id="admin">Admin</button></footer>
 <dialog id="dlg">${admin?dashboard():login()}</dialog>`;
-wire()}
+const ratioStyle=document.createElement("style");ratioStyle.textContent="#work .ratio-img{width:100%;height:auto!important;aspect-ratio:auto!important;object-fit:contain!important;display:block!important}";document.head.appendChild(ratioStyle);wire()}
 function login(){return `<div class="panel"><button class="x" id="closeDlg">×</button><div class="tag">PRIVATE ACCESS</div><h2>Admin login</h2><input id="email" placeholder="Email" type="email"><input id="pass" placeholder="Password" type="password"><button class="btn wide" id="login">Log in</button></div>`}
 function dashboard(){return `<div class="panel"><button class="x" id="closeDlg">×</button><div class="tag">PRIVATE DASHBOARD</div><h2>Manage portfolio</h2><label>Project name<input id="title" placeholder="BGMI Thumbnail"></label><label>Folder<select id="folder">${folders.map(x=>`<option>${esc(x)}</option>`).join("")}</select></label><label>New folder (optional)<input id="newfolder" placeholder="e.g. YouTube Thumbnails"></label><input id="file" type="file" accept="image/*"><button class="btn wide" id="upload">Upload work</button><h3>Folders</h3>${folders.map(x=>`<div class="frow"><span>${esc(x)}</span><button class="tiny ren" data-name="${esc(x)}">Rename</button></div>`).join("")}</div>`}
 function wire(){
